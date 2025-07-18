@@ -97,12 +97,6 @@ See `requirements.txt` for all dependencies. Key packages:
 
 ---
 
-## 🔒 Security & Secrets
-- **Never commit real API keys or credentials.** Use the provided placeholder files and environment variables.
-- The `__pycache__` folders contain only compiled Python files and can be ignored.
-
----
-
 
 **Built by Shilok Kumar**
 
