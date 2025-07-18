@@ -1,3 +1,4 @@
+![Logo](bot.jpg)
 # AI Letter Generation Agent
 ## Built with Langchain
 
