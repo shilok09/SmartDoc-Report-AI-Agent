@@ -1,4 +1,5 @@
 # AI Letter Generation Agent
+## Built with Langchain
 
 This project is an AI-powered automation tool for generating professional company letters and exporting them to Google Docs. It features a FastAPI backend, a modern chat-based frontend, and deep integration with Google Drive and OpenAI (or compatible LLMs) via LangChain.
 
