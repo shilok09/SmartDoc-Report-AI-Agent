@@ -1,0 +1,26 @@
+# Core LLM and Agent Framework
+langchain
+langchain-core
+langchain-openai
+langchain-google-community
+
+# OpenAI API
+openai
+
+# Google API Integration
+google-api-python-client
+google-auth
+google-auth-oauthlib
+
+# FastAPI Backend
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Environment Variable Management
+python-dotenv
+
+# Pydantic for data validation
+pydantic
+
+# Requests for HTTP calls (if needed by backend)
+requests==2.31.0 

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Letter Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #000000 0%, #0d1117 50%, #1a1a1a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      background: rgba(31, 31, 31, 0.95);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .ai-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+    }
+
+    .ai-icon::before {
+      content: '🤖';
+      filter: brightness(0) invert(1);
+    }
+
+    .chat-title {
+      font-size: 28px;
+      font-weight: 400;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .chat-subtitle {
+      font-size: 16px;
+      color: #9ca3af;
+      line-height: 1.5;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .media-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .media-tab {
+      color: #10b981;
+      font-size: 14px;
+      border-bottom: 2px solid #10b981;
+      padding-bottom: 4px;
+    }
+
+    .chat-messages {
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: block;
+    }
+
+    .message {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      max-width: 85%;
+      word-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .message.user {
+      background: #10b981;
+      color: #ffffff;
+      margin-left: auto;
+    }
+
+    .message.ai {
+      background: rgba(55, 55, 55, 0.8);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .input-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 4px 4px 4px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: #374151;
+      font-size: 16px;
+      padding: 14px 0;
+      font-family: inherit;
+    }
+
+    .chat-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .send-button {
+      background: #10b981;
+      border: none;
+      border-radius: 20px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+
+    .send-button:hover {
+      background: #059669;
+    }
+
+    .send-button:disabled {
+      background: #6b7280;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #10b981;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dot:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .error-message {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .status-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-indicator.connected {
+      background: #059669;
+      color: white;
+    }
+
+    .status-indicator.disconnected {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="status-indicator" id="statusIndicator">Connecting...</div>
+    
+    <div class="chat-header">
+      <div class="ai-icon"></div>
+      <h1 class="chat-title">How can I help you today?</h1>
+      <p class="chat-subtitle">I'm an AI assistant specialized in generating professional letters for company employees.</p>
+    </div>
+
+    <div class="media-tabs">
+      <div class="media-tab">Google Docs Letter Generator</div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message ai"><strong>AI Assistant:</strong> Hello! I'm ready to help you generate professional letters. What type of letter would you like to create today?</div>
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <p>AI is generating your response...</p>
+    </div>
+
+    <div class="input-container">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type your prompt here..." onkeypress="handleKeyPress(event)">
+      <button class="send-button" id="sendButton" onclick="sendMessage()">→</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8000';
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const sendButton = document.getElementById('sendButton');
+    const statusIndicator = document.getElementById('statusIndicator');
+    
+    let conversationId = null;
+    let isConnected = false;
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', () => {
+      checkConnection();
+      chatInput.focus();
+    });
+
+    // Check API connection
+    async function checkConnection() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/`);
+        if (response.ok) {
+          isConnected = true;
+          statusIndicator.textContent = 'Connected';
+          statusIndicator.className = 'status-indicator connected';
+        } else {
+          throw new Error('API not responding');
+        }
+      } catch (error) {
+        isConnected = false;
+        statusIndicator.textContent = 'Disconnected';
+        statusIndicator.className = 'status-indicator disconnected';
+        showError('Unable to connect to AI service. Please check if the backend is running.');
+      }
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || !isConnected) return;
+
+      // Disable input while processing
+      chatInput.disabled = true;
+      sendButton.disabled = true;
+      
+      addMessage(text, 'user');
+      chatInput.value = '';
+      showLoading();
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: text,
+            conversation_id: conversationId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+          conversationId = data.conversation_id;
+          hideLoading();
+          addMessage(data.response, 'ai');
+        } else {
+          throw new Error(data.error || 'Unknown error occurred');
+        }
+      } catch (error) {
+        hideLoading();
+        showError(`Error: ${error.message}`);
+        console.error('Error sending message:', error);
+      } finally {
+        // Re-enable input
+        chatInput.disabled = false;
+        sendButton.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.innerHTML = `<strong>${sender === 'user' ? 'You' : 'AI Assistant'}:</strong> ${text}`;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      chatMessages.appendChild(errorDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showLoading() {
+      loadingIndicator.classList.add('show');
+    }
+
+    function hideLoading() {
+      loadingIndicator.classList.remove('show');
+    }
+
+    // Retry connection every 30 seconds if disconnected
+    setInterval(() => {
+      if (!isConnected) {
+        checkConnection();
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
